@@ -5,7 +5,7 @@ stages:
   - deploy
 
 variables:
-  DOCKER_USER_ID: "gglagvn"
+  DOCKER_USER_ID: "hieuday88"
 
 build-job:
   stage: build

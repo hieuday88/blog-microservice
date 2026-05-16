@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mysql-db:
     image: mysql:8.0
@@ -7,50 +5,61 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: "123456"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_PASSWORD:-123456}"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
       - blog-network
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: blog-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - blog-network
+
   auth-service:
-    build: ./auth-service
+    build: ./backend/auth-service
     container_name: auth-service
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/auth_db?useSSL=false&serverTimezone=UTC
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=123456
+      - AUTH_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/auth_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+      - AUTH_DATASOURCE_USERNAME=${MYSQL_USERNAME:-root}
+      - AUTH_DATASOURCE_PASSWORD=${MYSQL_PASSWORD:-123456}
     depends_on:
       - mysql-db
     networks:
       - blog-network
 
   post-service:
-    build: ./post-service
+    build: ./backend/post-service
     container_name: post-service
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/post_db?useSSL=false&serverTimezone=UTC
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=123456
+      - POST_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/post_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+      - POST_DATASOURCE_USERNAME=${MYSQL_USERNAME:-root}
+      - POST_DATASOURCE_PASSWORD=${MYSQL_PASSWORD:-123456}
     depends_on:
       - mysql-db
     networks:
       - blog-network
 
   comment-service:
-    build: ./comment-service
+    build: ./backend/comment-service
     container_name: comment-service
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/comment_db?useSSL=false&serverTimezone=UTC
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=123456
+      - COMMENT_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/comment_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+      - COMMENT_DATASOURCE_USERNAME=${MYSQL_USERNAME:-root}
+      - COMMENT_DATASOURCE_PASSWORD=${MYSQL_PASSWORD:-123456}
+      - RABBITMQ_HOST=rabbitmq
     depends_on:
       - mysql-db
+      - rabbitmq
     networks:
       - blog-network
 
   api-gateway:
-    build: ./api-gateway
+    build: ./backend/api-gateway
     container_name: api-gateway
     ports:
       - "8080:8080"

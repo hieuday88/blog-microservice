@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sửa bài viết | Blog Microservice</title>
+    <meta name="description" content="Chỉnh sửa bài viết.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/pages/post.css">
+  </head>
+  <body data-mode="edit">
+    <header id="app-header" class="header"></header>
+    <main class="page container post-form-layout">
+      <aside class="panel panel-pad">
+        <span class="eyebrow">Sửa bài viết</span>
+        <h1 class="section-title" style="margin-top: 16px;">Chỉnh sửa bài viết</h1>
+        <p class="muted">Nếu không chọn ảnh mới, backend sẽ giữ ảnh hiện tại.</p>
+      </aside>
+      <section class="panel panel-pad">
+        <form id="post-form" class="form-grid">
+          <label class="field">Tiêu đề
+            <input id="title" class="input" name="title" required>
+          </label>
+          <label class="field">Mô tả
+            <input id="description" class="input" name="description" required>
+          </label>
+          <label class="field">Nội dung
+            <textarea id="content" class="textarea" name="content" required></textarea>
+          </label>
+          <label class="file-drop">
+            <span id="image-label">Chọn ảnh mới</span>
+            <input id="image" class="hidden" type="file" accept="image/*">
+          </label>
+          <div id="image-preview" class="preview hidden"></div>
+          <p id="post-form-message" class="hidden"></p>
+          <button id="post-submit" class="btn" type="submit">Lưu thay đổi</button>
+        </form>
+      </section>
+    </main>
+    <footer id="app-footer" class="footer"></footer>
+    <script type="module" src="/js/pages/post-form.js"></script>
+  </body>
+</html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chi tiết bài viết | Blog Microservice</title>
+    <meta name="description" content="Đọc bài viết và bình luận.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/components.css">
+  </head>
+  <body>
+    <header id="app-header" class="header"></header>
+    <main class="page container">
+      <a class="btn secondary" href="/">Về danh sách</a>
+      <p id="post-message" class="hidden"></p>
+      <article id="post-article" class="article panel panel-pad" style="margin-top: 18px;"></article>
+      <section class="panel panel-pad" style="margin-top: 18px;" aria-labelledby="comments-title">
+        <h2 id="comments-title" class="section-title">Bình luận</h2>
+        <form id="comment-form" class="form-grid">
+          <label class="field">Viết bình luận
+            <textarea id="comment-content" class="textarea" required></textarea>
+          </label>
+          <button class="btn" type="submit">Gửi</button>
+        </form>
+        <p id="comment-message" class="hidden"></p>
+        <div id="comments" class="list" style="margin-top: 18px;"></div>
+      </section>
+    </main>
+    <footer id="app-footer" class="footer"></footer>
+    <script type="module" src="/js/pages/post-detail.js"></script>
+  </body>
+</html>

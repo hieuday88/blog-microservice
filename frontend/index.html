@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Blog Microservice</title>
+    <meta name="description" content="Giao diện HTML tĩnh kết nối Quarkus blog microservices.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/components.css">
+  </head>
+  <body>
+    <header id="app-header" class="header"></header>
+    <main id="main-content" class="page container">
+      <section class="grid hero-grid">
+        <div class="panel panel-pad">
+          <span class="eyebrow">Quarkus API Gateway + JWT</span>
+          <h1 class="page-title">Không gian blog kết nối trực tiếp với backend microservices.</h1>
+          <p class="lead">Giao diện HTML, CSS và JavaScript thuần dùng cùng endpoint backend: xác thực, người dùng, bài viết, bình luận và tải ảnh bằng base64 JSON.</p>
+          <div class="actions">
+            <a id="create-post-link" class="btn" href="/posts/create.html">Viết bài mới</a>
+            <button id="refresh-posts" class="btn secondary" type="button">Làm mới</button>
+          </div>
+        </div>
+        <aside class="grid">
+          <div id="backend-status" class="panel panel-pad"></div>
+          <div class="panel panel-pad">
+            <h2 class="section-title">Trạng thái chạy</h2>
+            <div class="stats">
+              <div class="stat"><strong id="post-count">0</strong><span class="muted">Bài viết</span></div>
+              <div class="stat"><strong id="jwt-state">Tắt</strong><span class="muted">JWT</span></div>
+            </div>
+          </div>
+        </aside>
+      </section>
+      <p id="home-message" class="hidden"></p>
+      <section id="posts" class="post-grid" aria-label="Danh sách bài viết"></section>
+    </main>
+    <footer id="app-footer" class="footer"></footer>
+    <script type="module" src="/js/pages/home.js"></script>
+  </body>
+</html>

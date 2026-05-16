@@ -1,0 +1,15 @@
+.post-form-layout {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 22px;
+}
+
+.post-form-layout aside {
+  height: fit-content;
+}
+
+@media (max-width: 860px) {
+  .post-form-layout {
+    grid-template-columns: 1fr;
+  }
+}

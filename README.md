@@ -1,690 +1,400 @@
-# 🚀 Hệ Thống Blog Microservices
+# Hệ Thống Blog Microservices
 
-[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.8-brightgreen.svg)](https://spring.io/projects/spring-boot)
-[![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-2025.0.0-blue.svg)](https://spring.io/projects/spring-cloud)
-[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg?logo=docker)](https://www.docker.com/)
+[![Java](https://img.shields.io/badge/Java-17+-orange.svg?logo=openjdk&logoColor=white)](https://openjdk.org/)
+[![Quarkus](https://img.shields.io/badge/Quarkus-3.17-4695EB.svg?logo=quarkus&logoColor=white)](https://quarkus.io/)
+[![Maven](https://img.shields.io/badge/Maven-Multi--Module-C71A36.svg?logo=apachemaven&logoColor=white)](https://maven.apache.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1.svg?logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![RabbitMQ](https://img.shields.io/badge/RabbitMQ-Messaging-FF6600.svg?logo=rabbitmq&logoColor=white)](https://www.rabbitmq.com/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Frontend](https://img.shields.io/badge/Frontend-HTML%20%7C%20CSS%20%7C%20JS-F7DF1E.svg?logo=javascript&logoColor=black)](frontend/)
 
----
+Hệ thống blog theo kiến trúc microservices, backend dùng Quarkus, database dùng MySQL, message broker dùng RabbitMQ, frontend dùng HTML/CSS/JavaScript thuần.
 
-## 📖 Giới Thiệu (Introduction)
+## 1. Yêu Cầu Môi Trường
 
-Đây là hệ thống quản lý Blog được xây dựng dựa trên kiến trúc **Microservices**. Dự án minh họa cách phân tách một ứng dụng lớn thành các dịch vụ nhỏ độc lập, giao tiếp với nhau qua **RESTful API** và **Message Queue**, đảm bảo khả năng **mở rộng** (Scalability) và **bảo trì** (Maintainability).
+Cần cài các công cụ sau:
 
-### ✨ Các Tính Năng Chính
+| Công cụ | Phiên bản khuyến nghị | Dùng để |
+| --- | --- | --- |
+| Java JDK | 17 trở lên | Build và chạy Quarkus services |
+| Maven | 3.9 trở lên | Build multi-module project |
+| Python | 3.10 trở lên | Chạy static frontend server |
+| Docker Desktop | Khuyến nghị | Chạy MySQL và RabbitMQ nhanh bằng Docker Compose |
+| PowerShell | Windows PowerShell hoặc PowerShell 7 | Chạy các script trong `scripts/` |
 
-* 🔐 **Authentication:** Đăng ký, Đăng nhập, cấp phát và xác thực Token (JWT)
-* 📝 **Post Management:** Thêm, Sửa, Xóa bài viết, Upload hình ảnh, Phân trang bài viết
-* 💬 **Comment System:** Bình luận bài viết, xử lý bất đồng bộ (Asynchronous) thông qua **RabbitMQ**
-* 🌐 **API Gateway:** Định tuyến tập trung, bảo mật và cấu hình CORS
-* 📚 **Documentation:** Tích hợp Swagger UI (OpenAPI) cho từng dịch vụ
-* 🔒 **Security:** Spring Security với JWT Authentication
-* 🗄️ **Database per Service:** Mỗi service có database riêng biệt
-* 📦 **Containerization:** Docker & Docker Compose support
-* ☸️ **Kubernetes Ready:** Sẵn sàng deploy lên K8s
+Kiểm tra nhanh:
 
----
-
-## 🏗️ Kiến Trúc Hệ Thống (Architecture)
-
-```
-┌─────────────┐
-│   Client    │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────────────────────────────────┐
-│         API Gateway (8080)              │
-│     Spring Cloud Gateway                │
-└────┬────────────┬────────────┬──────────┘
-     │            │            │
-     ▼            ▼            ▼
-┌─────────┐  ┌─────────┐  ┌──────────┐
-│  Auth   │  │  Post   │  │ Comment  │
-│ Service │  │ Service │  │ Service  │
-│  8081   │  │  8082   │  │  8083    │
-└────┬────┘  └────┬────┘  └────┬─────┘
-     │            │            │
-     ▼            ▼            ▼
-┌─────────┐  ┌─────────┐  ┌─────────┐
-│ auth_db │  │ post_db │  │comment_db│
-└─────────┘  └─────────┘  └─────────┘
-                               │
-                               ▼
-                          ┌──────────┐
-                          │ RabbitMQ │
-                          │   5672   │
-                          └──────────┘
+```powershell
+java -version
+mvn -version
+python --version
+docker --version
 ```
 
-### 📦 Các Service Chính
+Nếu không dùng Docker, bạn cần tự chạy:
 
-| Service | Port | Mô Tả | Công Nghệ Chính |
-|:--------|:-----|:------|:----------------|
-| 🌐 **API Gateway** | `8080` | Cổng truy cập duy nhất, điều hướng request | Spring Cloud Gateway |
-| 🔐 **Auth Service** | `8081` | Quản lý User, Login, Register, JWT | Spring Security, JJWT |
-| 📝 **Post Service** | `8082` | Quản lý bài viết (CRUD), Upload ảnh | JPA, MultipartFile |
-| 💬 **Comment Service** | `8083` | Quản lý bình luận, tích hợp RabbitMQ | RabbitMQ (Producer/Consumer) |
-| 🗄️ **MySQL Database** | `3306` | Lưu trữ dữ liệu | MySQL 8.0 |
-| 📨 **Message Broker** | `5672` | Hàng đợi tin nhắn | RabbitMQ |
+- MySQL ở port `3306`
+- RabbitMQ ở port `5672`
+- RabbitMQ Management UI ở port `15672` nếu muốn mở dashboard
 
----
+## 2. Cấu Trúc Dự Án
 
-## 🛠️ Yêu Cầu Cài Đặt (Prerequisites)
-
-Để chạy dự án này, máy tính của bạn cần cài đặt:
-
-- ☕ **Java JDK 17** hoặc mới hơn
-- 📦 **Maven 3.8+**
-- 🐳 **Docker Desktop** (Khuyên dùng để chạy MySQL và RabbitMQ)
-- 💻 **IntelliJ IDEA** hoặc IDE ưa thích
-- 🔧 **Git** để clone repository
-
----
-
-## 🚀 Hướng Dẫn Cài Đặt & Chạy (Installation & Running)
-
-### 📥 Bước 1: Clone Repository
-
-```bash
-git clone https://github.com/hieuday88/blog-microservice.git
-cd blog-microservice
+```text
+blog-microservice-main/
+|-- backend/
+|   |-- api-gateway/        # Gateway HTTP, định tuyến /api/**, xử lý JWT/CORS
+|   |-- auth-service/       # Đăng ký, đăng nhập, người dùng, phân quyền
+|   |-- post-service/       # CRUD bài viết và ảnh
+|   `-- comment-service/    # CRUD bình luận, RabbitMQ event
+|-- frontend/               # Giao diện HTML/CSS/JavaScript thuần
+|-- scripts/                # Script chạy local
+|-- docs/                   # Tài liệu kỹ thuật và kế hoạch
+|-- storage/                # Dữ liệu local/legacy không thuộc source code
+|-- docker-compose.yml      # MySQL, RabbitMQ và Docker build context
+|-- pom.xml                 # Maven parent multi-module
+`-- README.md
 ```
 
-### 🐳 Cách 1: Chạy bằng Docker Compose (⭐ Khuyên Dùng - Nhanh Nhất)
+Tài liệu liên quan:
 
-#### 1️⃣ Build toàn bộ project:
-```bash
-mvn clean install -DskipTests
+- [Tech stack](docs/QUARKUS_TECH_STACK.md)
+- [Kế hoạch triển khai](docs/implementation_plan.md)
+- [Cấu trúc dự án](docs/project-structure.md)
+
+## 3. Cách Chạy Nhanh
+
+Chạy đầy đủ từ đầu, bao gồm Docker, build và mở services:
+
+```powershell
+.\scripts\run-full.ps1
 ```
 
-#### 2️⃣ Khởi động hệ thống:
-```bash
-docker-compose up -d --build
+Chạy khi MySQL và RabbitMQ đã có sẵn, nhưng vẫn build lại Java:
+
+```powershell
+.\scripts\run-no-docker.ps1
 ```
 
-#### 3️⃣ Kiểm tra trạng thái:
-```bash
-docker-compose ps
+Chạy nhanh từ jar đã build sẵn, bỏ qua Docker và build:
+
+```powershell
+.\scripts\run-fast.ps1
 ```
 
-#### 4️⃣ Xem logs (nếu cần):
-```bash
-docker-compose logs -f
+Chạy script chính với tùy chọn:
+
+```powershell
+.\scripts\run-all.ps1
+.\scripts\run-all.ps1 -SkipDocker
+.\scripts\run-all.ps1 -SkipBuild
+.\scripts\run-all.ps1 -NoBrowser
+.\scripts\run-all.ps1 -FrontendPort 3002
 ```
 
-#### 5️⃣ Dừng hệ thống:
-```bash
-docker-compose down
+## 4. Địa Chỉ Truy Cập
+
+| Thành phần | URL |
+| --- | --- |
+| Frontend | http://localhost:3002 |
+| API Gateway | http://localhost:8080 |
+| Auth Service | http://localhost:8081 |
+| Post Service | http://localhost:8082 |
+| Comment Service | http://localhost:8083 |
+| RabbitMQ UI | http://localhost:15672 |
+
+Tài khoản quản trị mặc định:
+
+```text
+Username: admin
+Password: admin
 ```
 
-### 🔧 Cách 2: Chạy Thủ Công (Manual)
+## 5. Build Backend
 
-#### 1️⃣ Khởi động MySQL và RabbitMQ bằng Docker:
+Build toàn bộ backend từ root:
 
-```bash
-# MySQL
-docker run -d \
-  --name blog-mysql \
-  -p 3306:3306 \
-  -e MYSQL_ROOT_PASSWORD=123456 \
-  mysql:8.0
-
-# RabbitMQ
-docker run -d \
-  --name blog-rabbitmq \
-  -p 5672:5672 \
-  -p 15672:15672 \
-  rabbitmq:3-management
+```powershell
+mvn clean package -DskipTests
 ```
 
-#### 2️⃣ Tạo các Database:
+Build một service cụ thể:
 
-```sql
-CREATE DATABASE auth_db;
-CREATE DATABASE post_db;
-CREATE DATABASE comment_db;
+```powershell
+mvn -pl backend/api-gateway package -DskipTests
+mvn -pl backend/auth-service package -DskipTests
+mvn -pl backend/post-service package -DskipTests
+mvn -pl backend/comment-service package -DskipTests
 ```
 
-#### 3️⃣ Build project:
+Output jar chạy được nằm tại:
 
-```bash
-mvn clean install -DskipTests
+```text
+backend/<service>/target/quarkus-app/quarkus-run.jar
 ```
 
-#### 4️⃣ Chạy từng service (mở terminal riêng cho mỗi service):
+Ví dụ chạy riêng API Gateway:
 
-```bash
-# Terminal 1 - Auth Service
-cd auth-service
-mvn spring-boot:run
-
-# Terminal 2 - Post Service
-cd post-service
-mvn spring-boot:run
-
-# Terminal 3 - Comment Service
-cd comment-service
-mvn spring-boot:run
-
-# Terminal 4 - API Gateway
-cd api-gateway
-mvn spring-boot:run
+```powershell
+cd backend\api-gateway
+java -jar target\quarkus-app\quarkus-run.jar
 ```
 
-### ☸️ Cách 3: Deploy lên Kubernetes
+## 6. Chạy Frontend Riêng
 
-```bash
-kubectl apply -f k8s/
+Frontend không dùng npm, Next.js hoặc bundler.
+
+```powershell
+cd frontend
+python -m http.server 3002
 ```
 
----
+Mở:
 
-## 📚 Tài Liệu API (Swagger UI)
+```text
+http://localhost:3002
+```
 
-Sau khi hệ thống khởi động thành công, bạn có thể truy cập tài liệu API tại:
+Frontend mặc định gọi API Gateway tại:
 
-| Service | Swagger UI |
-|:--------|:-----------|
-| 🔐 Auth Service | [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html) |
-| 📝 Post Service | [http://localhost:8082/swagger-ui.html](http://localhost:8082/swagger-ui.html) |
-| 💬 Comment Service | [http://localhost:8083/swagger-ui.html](http://localhost:8083/swagger-ui.html) |
+```text
+http://localhost:8080
+```
 
-> 💡 **Lưu ý:** Để test các API bảo mật (có hình ổ khóa 🔒), bạn cần:
-> 1. Gọi API `/api/auth/login` để lấy Token
-> 2. Bấm nút **Authorize** 🔓 trên Swagger và nhập: `Bearer <your_token>`
+Nếu muốn đổi API Gateway URL trong trình duyệt:
 
----
+```javascript
+localStorage.setItem("blog-api-base-url", "http://localhost:8080")
+location.reload()
+```
 
-## 🔌 API Endpoints
+JWT được lưu trong localStorage với key:
 
-### 🔐 Authentication (Auth Service)
+```text
+blog-token
+```
 
-| Method | Endpoint | Mô Tả | Auth Required |
-|:-------|:---------|:------|:--------------|
-| 📝 POST | `/api/auth/register` | Đăng ký tài khoản mới | ❌ |
-| 🔑 POST | `/api/auth/login` | Đăng nhập và lấy JWT token | ❌ |
+## 7. Chạy Hạ Tầng Bằng Docker
 
-### 👤 Users (Auth Service)
+Chạy MySQL và RabbitMQ:
 
-| Method | Endpoint | Mô Tả | Auth Required |
-|:-------|:---------|:------|:--------------|
-| 👁️ GET | `/api/users/me` | Lấy thông tin user hiện tại | ✅ |
-| 👤 GET | `/api/users/{username}/profile` | Xem profile của user khác | ❌ |
-| ✔️ GET | `/api/users/checkUsernameAvailability` | Kiểm tra username có khả dụng | ❌ |
-| ✏️ PUT | `/api/users/setOrUpdateInfo` | Cập nhật thông tin cá nhân | ✅ |
-| 👑 PUT | `/api/users/{username}/giveAdmin` | Cấp quyền Admin | ✅ Admin |
-| 👤 PUT | `/api/users/{username}/takeAdmin` | Thu hồi quyền Admin | ✅ Admin |
-| 🗑️ DELETE | `/api/users/{username}` | Xóa user | ✅ |
+```powershell
+docker compose up -d mysql-db rabbitmq
+```
 
-### 📝 Posts (Post Service)
+Chạy toàn bộ container backend:
 
-| Method | Endpoint | Mô Tả | Auth Required |
-|:-------|:---------|:------|:--------------|
-| 📋 GET | `/api/posts` | Lấy tất cả bài viết (có phân trang) | ❌ |
-| 📄 GET | `/api/posts/{id}` | Lấy chi tiết 1 bài viết | ❌ |
-| 👤 GET | `/api/posts/user/{userId}` | Lấy bài viết của 1 user | ❌ |
-| ➕ POST | `/api/posts` | Tạo bài viết mới (có upload ảnh) | ✅ |
-| ✏️ PUT | `/api/posts/{id}` | Cập nhật bài viết | ✅ |
-| 🗑️ DELETE | `/api/posts/{id}` | Xóa bài viết | ✅ |
+```powershell
+docker compose up --build
+```
 
-**Query Parameters cho phân trang:**
-- `page`: Số trang (mặc định: 0)
-- `size`: Số bài viết mỗi trang (mặc định: 5)
-- `sortBy`: Trường sắp xếp (mặc định: id)
-- `sortDir`: Hướng sắp xếp (asc/desc, mặc định: asc)
+Dừng container:
 
-**Ví dụ:** `/api/posts?page=0&size=10&sortBy=id&sortDir=desc`
+```powershell
+docker compose down
+```
 
-### 💬 Comments (Comment Service)
+Dừng và xóa volume database:
 
-| Method | Endpoint | Mô Tả | Auth Required |
-|:-------|:---------|:------|:--------------|
-| 📋 GET | `/api/posts/{postId}/comments` | Lấy tất cả comment của bài viết | ❌ |
-| 📄 GET | `/api/posts/{postId}/comments/{commentId}` | Lấy chi tiết 1 comment | ❌ |
-| ➕ POST | `/api/posts/{postId}/comments` | Tạo comment (gửi notification qua RabbitMQ) | ✅ |
-| ✏️ PUT | `/api/posts/{postId}/comments/{commentId}` | Cập nhật comment | ✅ |
-| 🗑️ DELETE | `/api/posts/{postId}/comments/{commentId}` | Xóa comment | ✅ |
+```powershell
+docker compose down -v
+```
 
----
+## 8. Biến Môi Trường Chính
 
-## 📝 Ví Dụ Request/Response
+Các service có default config, nhưng có thể override bằng biến môi trường.
 
-### 1️⃣ Đăng Ký Tài Khoản
+### Auth Service
 
-**Request:**
-```bash
+| Biến | Mặc định |
+| --- | --- |
+| `AUTH_DATASOURCE_URL` | `jdbc:mysql://localhost:3306/auth_db?...` |
+| `AUTH_DATASOURCE_USERNAME` | Theo `-MysqlUsername`, mặc định `root` |
+| `AUTH_DATASOURCE_PASSWORD` | Theo `-MysqlPassword`, mặc định `123456` |
+| `JWT_SECRET` | Giá trị mặc định trong `application.properties` |
+
+### Post Service
+
+| Biến | Mặc định |
+| --- | --- |
+| `POST_DATASOURCE_URL` | `jdbc:mysql://localhost:3306/post_db?...` |
+| `POST_DATASOURCE_USERNAME` | Theo `-MysqlUsername`, mặc định `root` |
+| `POST_DATASOURCE_PASSWORD` | Theo `-MysqlPassword`, mặc định `123456` |
+
+### Comment Service
+
+| Biến | Mặc định |
+| --- | --- |
+| `COMMENT_DATASOURCE_URL` | `jdbc:mysql://localhost:3306/comment_db?...` |
+| `COMMENT_DATASOURCE_USERNAME` | Theo `-MysqlUsername`, mặc định `root` |
+| `COMMENT_DATASOURCE_PASSWORD` | Theo `-MysqlPassword`, mặc định `123456` |
+| `RABBITMQ_HOST` | `localhost` |
+
+### MySQL Khi Chạy Bằng Script
+
+Nếu MySQL của bạn dùng username/password khác, mở file:
+
+```powershell
+scripts\run-all.ps1
+```
+
+Sửa block cấu hình ở đầu file:
+
+```powershell
+$DefaultMysqlUsername = "root"
+$DefaultMysqlPassword = "123456"
+```
+
+Sau đó chỉ cần chạy:
+
+```powershell
+.\scripts\run-full.ps1
+```
+
+hoặc:
+
+```powershell
+.\scripts\run-fast.ps1
+```
+
+Script vẫn hỗ trợ truyền tham số nếu cần ghi đè tạm thời:
+
+```powershell
+.\scripts\run-all.ps1 -MysqlUsername root -MysqlPassword 123456
+```
+
+Nếu dùng Docker Compose, password này cũng được truyền thành `MYSQL_ROOT_PASSWORD`.
+
+### API Gateway
+
+| Biến | Mặc định |
+| --- | --- |
+| `AUTH_SERVICE_URL` | `http://127.0.0.1:8081` |
+| `POST_SERVICE_URL` | `http://127.0.0.1:8082` |
+| `COMMENT_SERVICE_URL` | `http://127.0.0.1:8083` |
+| `QUARKUS_HTTP_CORS_ORIGINS` | Cho phép `localhost:3002` và `127.0.0.1:3002` |
+
+## 9. API Chính
+
+Tất cả request frontend đi qua API Gateway:
+
+```text
+http://localhost:8080
+```
+
+### Auth
+
+```http
 POST /api/auth/register
-Content-Type: application/json
-```
-
-```json
-{
-  "name": "Nguyễn Văn A",
-  "username": "nguyenvana",
-  "email": "nguyenvana@example.com",
-  "password": "matkhau123"
-}
-```
-
-**Response:**
-```
-Đăng ký thành công!
-```
-
-### 2️⃣ Đăng Nhập
-
-**Request:**
-```bash
 POST /api/auth/login
-Content-Type: application/json
 ```
 
-```json
-{
-  "username": "nguyenvana",
-  "password": "matkhau123"
-}
+Ví dụ login:
+
+```powershell
+Invoke-RestMethod -Method Post `
+  -Uri http://localhost:8080/api/auth/login `
+  -ContentType "application/json" `
+  -Body '{"username":"admin","password":"admin"}'
 ```
 
-**Response:**
-```
-eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuZ3V5ZW52YW5hIiwiaWF0IjoxNjg5...
+### User
+
+```http
+GET /api/users/me
+GET /api/users
+PUT /api/users/{username}/giveAdmin
+PUT /api/users/{username}/takeAdmin
+DELETE /api/users/{username}
 ```
 
-### 3️⃣ Tạo Bài Viết (Multipart Form-Data)
+### Post
 
-**Request:**
-```bash
+```http
+GET /api/posts?page=0&size=9&sortBy=id&sortDir=desc
+GET /api/posts/{id}
 POST /api/posts
-Authorization: Bearer {your-jwt-token}
-Content-Type: multipart/form-data
+PUT /api/posts/{id}
+DELETE /api/posts/{id}
+GET /api/posts/images/{filename}
 ```
 
-**Form Data:**
-- `title`: "Hướng dẫn xây dựng Microservices với Spring Boot"
-- `content`: "Nội dung chi tiết về cách xây dựng hệ thống microservices..."
-- `description`: "Bài viết hướng dẫn chi tiết"
-- `authorId`: 1
-- `image`: [file ảnh]
+Tạo bài viết dùng JSON. Nếu có ảnh, frontend gửi:
 
-**Response:**
 ```json
 {
-  "id": 1,
-  "title": "Hướng dẫn xây dựng Microservices với Spring Boot",
-  "content": "Nội dung chi tiết về cách xây dựng hệ thống microservices...",
-  "description": "Bài viết hướng dẫn chi tiết",
+  "title": "Tiêu đề",
+  "description": "Mô tả",
+  "content": "Nội dung",
   "authorId": 1,
-  "imageName": "a1b2c3d4-e5f6-7890-abcd-ef1234567890_image.jpg"
+  "authorUsername": "admin",
+  "imageBase64": "data:image/png;base64,...",
+  "imageFileName": "image.png"
 }
 ```
 
-### 4️⃣ Tạo Comment
+### Comment
 
-**Request:**
-```bash
-POST /api/posts/1/comments
-Content-Type: application/json
+```http
+GET /api/posts/{postId}/comments
+POST /api/posts/{postId}/comments
+PUT /api/posts/{postId}/comments/{commentId}
+DELETE /api/posts/{postId}/comments/{commentId}
 ```
 
-```json
-{
-  "content": "Bài viết rất hay và bổ ích!",
-  "userId": 2
-}
+## 10. Luồng Sử Dụng Cơ Bản
+
+1. Chạy `.\scripts\run-full.ps1`.
+2. Mở `http://localhost:3002`.
+3. Đăng nhập bằng `admin` / `admin`.
+4. Tạo bài viết mới.
+5. Mở chi tiết bài viết và thêm bình luận.
+6. Vào trang quản trị để quản lý người dùng, bài viết và bình luận.
+
+## 11. Lỗi Thường Gặp
+
+### Maven không xóa được `quarkus-run.jar`
+
+Nguyên nhân: service Java đang chạy và khóa file trong `target`.
+
+Cách xử lý:
+
+```powershell
+Get-NetTCPConnection -LocalPort 8080,8081,8082,8083
+Stop-Process -Id <PID> -Force
+mvn clean package -DskipTests
 ```
 
-**Response:**
-```json
-{
-  "id": 1,
-  "content": "Bài viết rất hay và bổ ích!",
-  "postId": 1,
-  "userId": 2
-}
+### Frontend gọi API bị `403 Forbidden`
+
+Kiểm tra frontend đang chạy bằng origin nào:
+
+- Đúng: `http://localhost:3002`
+- Cũng được hỗ trợ: `http://127.0.0.1:3002`
+
+Nếu vẫn lỗi, restart API Gateway để nhận cấu hình CORS mới.
+
+### API Gateway không gọi được service
+
+Kiểm tra các service backend đã chạy chưa:
+
+```powershell
+Get-NetTCPConnection -LocalPort 8080,8081,8082,8083
 ```
 
-> 📨 **Lưu ý:** Khi tạo comment, hệ thống tự động gửi event qua RabbitMQ để thông báo!
+### Docker báo không đọc được config
 
----
+Nếu thấy cảnh báo:
 
-## 🧪 Kịch Bản Kiểm Thử (Testing Flow)
-
-### 🎯 Luồng Test Cơ Bản
-
-1. **🔐 Đăng ký/Đăng nhập:**
-   - Tạo tài khoản mới qua `/api/auth/register`
-   - Login qua `/api/auth/login` để lấy JWT Token
-
-2. **📝 Tạo bài viết:**
-   - Dùng Token gọi API `POST /api/posts` (có kèm file ảnh)
-   - Kiểm tra ảnh đã được lưu trong thư mục `uploads/`
-
-3. **💬 Bình luận:**
-   - Gọi API `POST /api/posts/{id}/comments`
-   - Kiểm tra comment đã được lưu vào database
-
-4. **📨 Kiểm tra RabbitMQ:**
-   - Truy cập RabbitMQ Management: [http://localhost:15672](http://localhost:15672)
-   - Login: `guest` / `guest`
-   - Vào tab **Queues** → `notification_queue`
-   - Quan sát biểu đồ message khi có bình luận mới
-
-### 🔍 Kiểm Tra Health Check
-
-```bash
-# Kiểm tra Auth Service
-curl http://localhost:8081/actuator/health
-
-# Kiểm tra Post Service
-curl http://localhost:8082/actuator/health
-
-# Kiểm tra Comment Service
-curl http://localhost:8083/actuator/health
+```text
+Error loading config file: open C:\Users\<user>\.docker\config.json: Access is denied
 ```
 
----
-
-## 📁 Cấu Trúc Dự Án (Project Structure)
-
-```
-blog-microservice/
-├── 📁 api-gateway/              # API Gateway service
-│   ├── src/
-│   └── pom.xml
-├── 📁 auth-service/             # Authentication & Authorization
-│   ├── src/
-│   │   └── main/
-│   │       ├── java/com/blog/auth/
-│   │       │   ├── controller/  # AuthController, UserController
-│   │       │   ├── entity/      # User, Role
-│   │       │   ├── security/    # JWT, SecurityConfig
-│   │       │   └── repository/  # UserRepository, RoleRepository
-│   │       └── resources/
-│   │           └── application.properties
-│   └── pom.xml
-├── 📁 post-service/             # Post Management
-│   ├── src/
-│   │   └── main/
-│   │       ├── java/com/blog/post/
-│   │       │   ├── controller/  # PostController
-│   │       │   ├── entity/      # Post
-│   │       │   └── repository/  # PostRepository
-│   │       └── resources/
-│   └── pom.xml
-├── 📁 comment-service/          # Comment Management
-│   ├── src/
-│   │   └── main/
-│   │       ├── java/com/blog/comment/
-│   │       │   ├── controller/  # CommentController
-│   │       │   ├── entity/      # Comment
-│   │       │   ├── config/      # RabbitMQConfig
-│   │       │   ├── consumer/    # NotificationConsumer
-│   │       │   └── repository/  # CommentRepository
-│   │       └── resources/
-│   └── pom.xml
-├── 📁 k8s/                      # Kubernetes deployment files
-├── 📁 uploads/                  # Thư mục lưu ảnh upload
-├── 🐳 docker-compose.yml        # Docker Compose configuration
-├── 📄 pom.xml                   # Maven parent POM
-└── 📖 README.md                 # Tài liệu này
-```
-
----
-
-## ⚙️ Cấu Hình (Configuration)
-
-### 🔐 JWT Configuration
-
-File: `auth-service/src/main/resources/application.properties`
-
-```properties
-# JWT Secret Key
-app.jwt-secret=DayLaKhoaBiMatCuaNhom8RatDaiVaKhoDoanDeBaoMatToken1234567890
-
-# JWT Expiration (7 ngày = 604800000 milliseconds)
-app.jwt-expiration-milliseconds=604800000
-```
-
-### 📨 RabbitMQ Configuration
-
-File: `comment-service/src/main/resources/application.properties`
-
-```properties
-# RabbitMQ Connection
-spring.rabbitmq.host=host.docker.internal
-spring.rabbitmq.port=5672
-spring.rabbitmq.username=guest
-spring.rabbitmq.password=guest
-
-# Queue Configuration
-rabbitmq.queue.name=notification_queue
-rabbitmq.exchange.name=notification_exchange
-rabbitmq.routing.key=notification_routing_key
-```
-
-### 🗄️ Database Configuration
-
-**Auth Service:**
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/auth_db?useSSL=false&serverTimezone=UTC
-spring.datasource.username=root
-spring.datasource.password=123456
-```
-
-**Post Service:**
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/post_db?useSSL=false&serverTimezone=UTC
-spring.datasource.username=root
-spring.datasource.password=123456
-```
-
-**Comment Service:**
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/comment_db?useSSL=false&serverTimezone=UTC
-spring.datasource.username=root
-spring.datasource.password=123456
-```
-
----
-
-## 🔧 Công Nghệ Sử Dụng (Tech Stack)
-
-### Backend Framework
-- ☕ **Java 17**
-- 🍃 **Spring Boot 3.5.8**
-- ☁️ **Spring Cloud 2025.0.0**
-- 🔒 **Spring Security**
-- 📊 **Spring Data JPA**
-- 🌐 **Spring Cloud Gateway**
-
-### Database & Messaging
-- 🗄️ **MySQL 8.0**
-- 📨 **RabbitMQ**
-- 🔄 **Hibernate ORM**
-
-### Security & Authentication
-- 🔐 **JWT (JSON Web Token)**
-- 🔑 **JJWT 0.11.5**
-- 🛡️ **Spring Security**
-
-### Documentation & Tools
-- 📚 **SpringDoc OpenAPI 2.5.0**
-- 🐳 **Docker & Docker Compose**
-- ☸️ **Kubernetes**
-- 🎯 **Lombok**
-- 📦 **Maven**
-
----
-
-## 🌟 Tính Năng Nổi Bật (Key Features)
-
-| Tính Năng | Mô Tả |
-|:----------|:------|
-| ✅ Microservices Architecture | Tách biệt các service độc lập, dễ mở rộng |
-| ✅ JWT Authentication | Xác thực bảo mật với JSON Web Token |
-| ✅ Role-based Authorization | Phân quyền USER và ADMIN |
-| ✅ RESTful API Design | Thiết kế API chuẩn REST |
-| ✅ Message Queue | RabbitMQ cho giao tiếp bất đồng bộ |
-| ✅ File Upload | Upload và lưu trữ ảnh cho bài viết |
-| ✅ Pagination & Sorting | Phân trang và sắp xếp dữ liệu |
-| ✅ Docker Support | Container hóa toàn bộ ứng dụng |
-| ✅ Kubernetes Ready | Sẵn sàng deploy lên K8s |
-| ✅ API Gateway Pattern | Cổng vào tập trung |
-| ✅ Database per Service | Mỗi service có database riêng |
-| ✅ OpenAPI/Swagger | Tài liệu API tự động |
-| ✅ Exception Handling | Xử lý lỗi tập trung |
-| ✅ Input Validation | Kiểm tra dữ liệu đầu vào |
-
----
-
-## 🚨 Lưu Ý Quan Trọng (Important Notes)
-
-> ⚠️ **Môi Trường Development:** Dự án này được thiết kế cho mục đích học tập và development.
-
-> 🔒 **Security:** Trong môi trường production, cần:
-> - Thay đổi JWT secret key
-> - Sử dụng HTTPS/SSL
-> - Cấu hình CORS chặt chẽ hơn
-> - Thêm rate limiting
-> - Sử dụng secrets management (Vault, AWS Secrets Manager)
-
-> 📊 **Production Ready Features cần bổ sung:**
-> - Service Discovery (Eureka, Consul)
-> - Config Server (Spring Cloud Config)
-> - Circuit Breaker (Resilience4j)
-> - Distributed Tracing (Zipkin, Sleuth)
-> - Centralized Logging (ELK Stack)
-> - Monitoring (Prometheus, Grafana)
-> - Database Migration (Flyway, Liquibase)
-
----
-
-## 🐛 Troubleshooting
-
-### ❌ Lỗi kết nối MySQL
-
-**Triệu chứng:** `Communications link failure`
-
-**Giải pháp:**
-```bash
-# Kiểm tra MySQL đang chạy
-docker ps | grep mysql
-
-# Restart MySQL container
-docker restart blog-mysql
-```
-
-### ❌ Lỗi RabbitMQ connection refused
-
-**Triệu chứng:** `Connection refused: connect`
-
-**Giải pháp:**
-```bash
-# Kiểm tra RabbitMQ
-docker ps | grep rabbitmq
-
-# Restart RabbitMQ
-docker restart blog-rabbitmq
-```
-
-### ❌ Port đã được sử dụng
-
-**Triệu chứng:** `Port 8080 is already in use`
-
-**Giải pháp:**
-```bash
-# Windows
-netstat -ano | findstr :8080
-taskkill /PID <PID> /F
-
-# Linux/Mac
-lsof -ti:8080 | xargs kill -9
-```
-
----
-
-## 🤝 Đóng Góp (Contributing)
-
-Mọi đóng góp để cải thiện dự án đều được hoan nghênh! 
-
-### 📋 Quy Trình Đóng Góp
-
-1. 🍴 Fork repository
-2. 🌿 Tạo branch mới (`git checkout -b feature/AmazingFeature`)
-3. 💾 Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. 📤 Push to branch (`git push origin feature/AmazingFeature`)
-5. 🔀 Tạo Pull Request
-
-### 🐛 Báo Lỗi
-
-Nếu phát hiện lỗi, vui lòng tạo Issue với thông tin:
-- Mô tả lỗi chi tiết
-- Các bước tái hiện lỗi
-- Screenshots (nếu có)
-- Môi trường (OS, Java version, Docker version)
-
----
-
-## 📄 Giấy Phép (License)
-
-Dự án này được phát hành dưới giấy phép **MIT License**.
-
-```
-MIT License
-
-Copyright (c) 2025 Blog Microservices Project
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
----
-
-## 🙏 Cảm Ơn (Acknowledgments)
-
-- Spring Boot Team
-- Spring Cloud Team
-- RabbitMQ Community
-- Docker Community
-- Tất cả contributors đã đóng góp cho dự án
-
----
-
-## 📊 Thống Kê Dự Án (Project Stats)
-
-![GitHub repo size](https://img.shields.io/github/repo-size/hieuday88/blog-microservice)
-![GitHub contributors](https://img.shields.io/github/contributors/hieuday88/blog-microservice)
-![GitHub stars](https://img.shields.io/github/stars/hieuday88/blog-microservice?style=social)
-![GitHub forks](https://img.shields.io/github/forks/hieuday88/blog-microservice?style=social)
-
----
-
-<div align="center">
-
-### ⭐ Nếu thấy dự án hữu ích, hãy cho một Star nhé! ⭐
-
-**Made with ❤️ by hieuday88 and gglagVN**
-
-*© 2025 - Blog Microservices Project*
-
-</div>
+Đây là lỗi quyền Docker config trên máy local. Compose config của dự án vẫn có thể hợp lệ, nhưng Docker Desktop/config người dùng cần được sửa quyền nếu lệnh Docker thật sự thất bại.
+
+## 12. Ghi Chú Phát Triển
+
+- Không sửa trực tiếp file trong `target/`.
+- Không cần `npm install` vì frontend không dùng Node package.
+- Khi sửa backend config, cần rebuild hoặc restart service tương ứng.
+- Khi sửa CSS/JS frontend, hard refresh trình duyệt bằng `Ctrl + F5` nếu thấy giao diện vẫn cũ.
+- Root repo chỉ giữ entrypoint cấp dự án; code nằm trong `backend/` và `frontend/`.

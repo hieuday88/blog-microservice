@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Đăng nhập | Blog Microservice</title>
+    <meta name="description" content="Đăng nhập vào Blog Microservice bằng JWT.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/pages/auth.css">
+  </head>
+  <body data-mode="login">
+    <header id="app-header" class="header"></header>
+    <main class="page container auth-layout">
+      <section>
+        <span class="eyebrow">Truy cập JWT</span>
+        <h1 class="page-title">Đăng nhập vào blog service.</h1>
+        <p class="lead">Token được lưu trong localStorage với khóa blog-token và gửi qua header xác thực Bearer cho API Gateway.</p>
+      </section>
+      <section class="panel panel-pad auth-card">
+        <div class="tabs" aria-label="Chọn chế độ xác thực">
+          <button id="tab-login" class="tab active" type="button">Đăng nhập</button>
+          <button id="tab-register" class="tab" type="button">Đăng ký</button>
+        </div>
+        <form id="auth-form" class="form-grid" style="margin-top: 18px;">
+          <input id="auth-mode" type="hidden" value="login">
+          <label class="field">Tên đăng nhập
+            <input class="input" name="username" autocomplete="username" required>
+          </label>
+          <label id="email-field" class="field hidden">Email
+            <input id="email" class="input" name="email" type="email" autocomplete="email">
+          </label>
+          <label class="field">Mật khẩu
+            <input class="input" name="password" type="password" autocomplete="current-password" required>
+          </label>
+          <p id="auth-message" class="hidden"></p>
+          <button id="auth-submit" class="btn" type="submit">Đăng nhập</button>
+        </form>
+      </section>
+    </main>
+    <footer id="app-footer" class="footer"></footer>
+    <script type="module" src="/js/pages/login.js"></script>
+  </body>
+</html>

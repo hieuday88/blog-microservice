@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản trị | Blog Microservice</title>
+    <meta name="description" content="Quản trị người dùng, bài viết và bình luận.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/pages/admin.css">
+  </head>
+  <body>
+    <header id="app-header" class="header"></header>
+    <main class="page container admin-only">
+      <section class="grid hero-grid">
+        <div class="panel panel-pad">
+          <span class="eyebrow">Bảng quản trị</span>
+          <h1 class="page-title">Bảng điều khiển quản trị blog.</h1>
+          <p class="lead">Quản lý tài khoản, quyền quản trị, bài viết và bình luận trong các microservice.</p>
+          <button id="refresh-admin" class="btn secondary" type="button">Làm mới</button>
+        </div>
+        <aside class="panel panel-pad">
+          <div class="stats">
+            <div class="stat"><strong id="users-count">0</strong><span class="muted">Người dùng</span></div>
+            <div class="stat"><strong id="admins-count">0</strong><span class="muted">Quản trị viên</span></div>
+            <div class="stat"><strong id="posts-count">0</strong><span class="muted">Bài viết</span></div>
+            <div class="stat"><strong id="comments-count">0</strong><span class="muted">Bình luận</span></div>
+          </div>
+        </aside>
+      </section>
+      <p id="admin-message" class="hidden"></p>
+      <section class="admin-grid">
+        <div class="panel panel-pad">
+          <h2 class="section-title">Người dùng</h2>
+          <div id="users-list" class="table-list"></div>
+        </div>
+        <div class="panel panel-pad">
+          <h2 class="section-title">Bài viết</h2>
+          <div id="admin-posts-list" class="table-list"></div>
+        </div>
+        <div class="panel panel-pad admin-wide">
+          <h2 class="section-title">Bình luận</h2>
+          <div id="comments-list" class="table-list"></div>
+        </div>
+      </section>
+    </main>
+    <footer id="app-footer" class="footer"></footer>
+    <script type="module" src="/js/pages/admin.js"></script>
+  </body>
+</html>

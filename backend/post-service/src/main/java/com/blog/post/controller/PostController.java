@@ -32,8 +32,16 @@ import java.util.UUID;
 @Path("/api/posts")
 @Produces(MediaType.APPLICATION_JSON)
 public class PostController {
-    public static final java.nio.file.Path UPLOAD_DIRECTORY =
-            Paths.get(System.getProperty("user.dir"), "uploads");
+    public static final java.nio.file.Path UPLOAD_DIRECTORY = getUploadPath();
+
+    private static java.nio.file.Path getUploadPath() {
+        java.nio.file.Path currentPath = Paths.get(System.getProperty("user.dir"));
+        // Nếu đang ở trong backend/post-service, đi ngược lên 2 cấp để ra gốc dự án
+        if (currentPath.toString().contains("post-service")) {
+            return currentPath.getParent().getParent().resolve("uploads").normalize();
+        }
+        return currentPath.resolve("uploads");
+    }
 
     @POST
     @Transactional
@@ -107,7 +115,20 @@ public class PostController {
     @Produces(MediaType.TEXT_PLAIN)
     public String deletePost(@PathParam("id") Long id) {
         Post post = findPost(id);
+        String imageName = post.imageName;
+
+        // Xoá trong database
         post.delete();
+
+        // Xoá file vật lý
+        if (imageName != null && !imageName.isEmpty()) {
+            try {
+                java.nio.file.Path filePath = UPLOAD_DIRECTORY.resolve(imageName);
+                Files.deleteIfExists(filePath);
+            } catch (IOException e) {
+                System.err.println("Lỗi khi xoá file ảnh: " + e.getMessage());
+            }
+        }
         return "Deleted post with ID: " + id;
     }
 

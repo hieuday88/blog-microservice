@@ -133,6 +133,12 @@ Write-Host "===============================================" -ForegroundColor Cy
 
 Set-Location $Root
 
+# Đảm bảo thư mục uploads tồn tại ở gốc dự án
+if (-not (Test-Path "uploads")) {
+    New-Item -ItemType Directory -Path "uploads" | Out-Null
+    Write-Ok "Created root uploads directory."
+}
+
 $env:MYSQL_USERNAME = $MysqlUsername
 $env:MYSQL_PASSWORD = $MysqlPassword
 $env:MYSQL_ROOT_PASSWORD = $MysqlPassword
